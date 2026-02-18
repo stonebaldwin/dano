@@ -1,0 +1,29 @@
+{
+  "name": "dan-o-home-loans",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:seed": "node scripts/seed-blog.js"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "next": "^16.1.6",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.30",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.7",
+    "eslint": "^10.0.0",
+    "eslint-config-next": "^0.2.4",
+    "typescript": "^5.8.2"
+  }
+}
