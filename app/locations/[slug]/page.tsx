@@ -62,7 +62,7 @@ export default async function LocationPage({ params }: Params) {
               to begin pre-approval.
             </p>
             <div className="cta-row">
-              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} rel="noreferrer">
+              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
                 Apply Now
               </a>
             </div>

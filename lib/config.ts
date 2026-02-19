@@ -2,8 +2,8 @@ export const siteConfig = {
   name: "Dan O Home Loans",
   domain: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.danohomeloans.com",
   defaultApplyNowUrl:
-    process.env.NEXT_PUBLIC_APPLY_NOW_URL ?? "https://example-lender-application.com/apply",
-  phone: "(910) 555-0148",
+    process.env.NEXT_PUBLIC_APPLY_NOW_URL ?? "https://apply.alcova.com/dr/c/vrli1",
+  phone: "(973) 710-8025",
   email: "team@danohomeloans.com"
 };
 

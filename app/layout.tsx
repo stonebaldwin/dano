@@ -46,7 +46,7 @@ export default function RootLayout({
         <div className="site-shell">
           <div className="utility-bar">
             <div className="container utility-inner">
-              <span>Serving Wilmington, Southern Pines, Raleigh</span>
+              <span>SERVING North Carolina, Texas, Tennessee, Georgia</span>
               <span>{siteConfig.phone}</span>
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function RootLayout({
                 Dan O Home Loans
               </Link>
               <SiteHeader items={navigation} />
-              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} rel="noreferrer">
+              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
                 Apply Now
               </a>
             </div>
@@ -69,7 +69,7 @@ export default function RootLayout({
                 <p className="footer-intro">
                   Institutional-grade mortgage guidance with local North Carolina market expertise for buyers, investors, and business owners.
                 </p>
-                <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} rel="noreferrer">
+                <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
                   Apply Now
                 </a>
               </div>

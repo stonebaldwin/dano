@@ -4,6 +4,7 @@ import FaqAccordion from "@/app/components/FaqAccordion";
 import LoanProgramsGrid from "@/app/components/LoanProgramsGrid";
 import { getAllArticles } from "@/lib/articles";
 import { siteConfig, targetLocations } from "@/lib/config";
+import { getExperienceReviews } from "@/lib/experienceReviews";
 
 const highIntentPaths = [
   {
@@ -71,24 +72,27 @@ const loanPrograms = [
   }
 ];
 
-const testimonials = [
+const fallbackTestimonials = [
   {
     quote:
       "Dan made the financing process clear from day one. We knew exactly what to expect at each stage and closed on schedule.",
     name: "Sarah M.",
-    detail: "Homebuyer in Wilmington"
+    detail: "Homebuyer in Wilmington",
+    rating: 5
   },
   {
     quote:
       "We were comparing refinance options and Dan walked us through tradeoffs with real numbers, not sales pressure.",
     name: "Jason R.",
-    detail: "Refinance client in Raleigh"
+    detail: "Refinance client in Raleigh",
+    rating: 5
   },
   {
     quote:
       "As an investor, I value speed and communication. Dan's team delivered both and kept every detail organized.",
     name: "Monica T.",
-    detail: "Investor in Southern Pines"
+    detail: "Investor in Southern Pines",
+    rating: 5
   }
 ];
 
@@ -120,8 +124,12 @@ const faqs = [
   }
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
   const articles = getAllArticles();
+  const experienceTestimonials = await getExperienceReviews("daniel-opirhory-384903", 10);
+  const testimonials =
+    experienceTestimonials.length > 0 ? experienceTestimonials : fallbackTestimonials;
+  const rollingTestimonials = [...testimonials, ...testimonials];
 
   return (
     <>
@@ -152,15 +160,15 @@ export default function HomePage() {
               support for residential, refinance, investment, and commercial borrowers.
             </p>
             <div className="cta-row">
-              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} rel="noreferrer">
+              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
                 Apply Now
               </a>
-              <a className="ghost-btn" href="tel:+19105550148">
+              <a className="ghost-btn" href="https://calendly.com/dopirhory-alcova/30min" target="_blank" rel="noreferrer">
                 Schedule a Call
               </a>
             </div>
             <div className="trust-strip">
-              <span className="trust-pill">NMLS #123456 (Placeholder)</span>
+              <span className="trust-pill">NMLS ID# 2619871</span>
               <span className="trust-pill">Licensed in NC, TX, TN, GA</span>
               <span className="trust-pill">4.9/5 Customer Rating</span>
             </div>
@@ -290,16 +298,32 @@ export default function HomePage() {
         <div className="container">
           <div className="section-head">
             <h2 className="section-title">What Clients Are Saying</h2>
+            <a
+              className="link-arrow"
+              href="https://www.experience.com/reviews/daniel-opirhory-384903"
+              target="_blank"
+              rel="noreferrer"
+            >
+              View All Reviews
+            </a>
           </div>
-          <div className="grid-3">
-            {testimonials.map((item) => (
-              <article key={item.name} className="card testimonial-card">
-                <p className="testimonial-quote">\"{item.quote}\"</p>
-                <strong>{item.name}</strong>
-                <p className="muted-meta">{item.detail}</p>
-              </article>
-            ))}
+          <div className="reviews-marquee" aria-label="Customer reviews from Experience.com">
+            <div className="reviews-track">
+              {rollingTestimonials.map((item, index) => (
+                <article key={`${item.name}-${index}`} className="card testimonial-card rolling-testimonial">
+                  <div className="review-stars" aria-hidden="true">
+                    {"★".repeat(item.rating)}
+                  </div>
+                  <p className="testimonial-quote">"{item.quote}"</p>
+                  <strong>{item.name}</strong>
+                  <p className="muted-meta">{item.detail}</p>
+                </article>
+              ))}
+            </div>
           </div>
+          <p className="muted-meta">
+            Live reviews from Experience.com. Hover to pause scrolling.
+          </p>
         </div>
       </section>
 
@@ -373,10 +397,10 @@ export default function HomePage() {
               Get pre-approved today and move forward with confidence.
             </p>
             <div className="cta-row">
-              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} rel="noreferrer">
+              <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
                 Apply Now
               </a>
-              <a className="ghost-btn" href="tel:+19105550148">
+              <a className="ghost-btn" href="https://calendly.com/dopirhory-alcova/30min" target="_blank" rel="noreferrer">
                 Schedule a Call
               </a>
             </div>
