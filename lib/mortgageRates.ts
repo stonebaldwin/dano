@@ -1,4 +1,3 @@
-const OPTIMAL_BLUE_HOME_URL = "https://www.optimalblue.com/";
 const MND_RATES_URL = "https://www.mortgagenewsdaily.com/mortgage-rates";
 const DEFAULT_REVALIDATE_SECONDS = 60 * 60 * 6;
 const HISTORY_POINTS = 124;
@@ -211,7 +210,7 @@ function emptyHistoryByProduct() {
 
 function fallbackSnapshot(sourceUrl?: string): MortgageRatesSnapshot {
   return {
-    sourceUrl: sourceUrl || OPTIMAL_BLUE_HOME_URL,
+    sourceUrl: sourceUrl || MND_RATES_URL,
     updatedLabel: null,
     fetchedAtEtLabel: formatEtTimestamp(),
     products: PRODUCT_KEYS.map((key) => ({ key, rate: 0, change: 0 })),
@@ -222,7 +221,7 @@ function fallbackSnapshot(sourceUrl?: string): MortgageRatesSnapshot {
       current: 0,
       change: 0,
       history: [],
-      sourceUrl: sourceUrl || OPTIMAL_BLUE_HOME_URL
+      sourceUrl: sourceUrl || MND_RATES_URL
     }
   };
 }
@@ -607,35 +606,6 @@ function normalizeSnapshot(payload: JsonRecord, sourceUrl: string): MortgageRate
     historyByProduct,
     umbs30Yr: parseUmbs(payload, sourceUrl)
   };
-}
-
-function buildOptimalBlueHeaders() {
-  const headers: Record<string, string> = {
-    Accept: "application/json"
-  };
-
-  const apiKey = process.env.OPTIMAL_BLUE_API_KEY;
-  if (apiKey) headers["x-api-key"] = apiKey;
-
-  const bearer = process.env.OPTIMAL_BLUE_API_TOKEN;
-  if (bearer) headers.Authorization = `Bearer ${bearer}`;
-
-  const clientId = process.env.OPTIMAL_BLUE_CLIENT_ID;
-  if (clientId) headers["x-client-id"] = clientId;
-
-  const extraHeadersRaw = process.env.OPTIMAL_BLUE_EXTRA_HEADERS;
-  if (extraHeadersRaw) {
-    try {
-      const extra = JSON.parse(extraHeadersRaw) as Record<string, string>;
-      for (const [key, value] of Object.entries(extra)) {
-        if (typeof value === "string" && value) headers[key] = value;
-      }
-    } catch {
-      // Ignore malformed extra headers to avoid runtime failures.
-    }
-  }
-
-  return headers;
 }
 
 export async function getMortgageRatesSnapshot(): Promise<MortgageRatesSnapshot> {

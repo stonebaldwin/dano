@@ -4,8 +4,23 @@ export const siteConfig = {
   defaultApplyNowUrl:
     process.env.NEXT_PUBLIC_APPLY_NOW_URL ?? "https://apply.alcova.com/dr/c/vrli1",
   phone: "(973) 710-8025",
-  email: "team@danohomeloans.com"
+  email: "dopirhory@alcova.com"
 };
+
+export const advisorProfile = {
+  name: "Daniel Opirhory",
+  title: "Mortgage Advisor",
+  phone: siteConfig.phone,
+  serving: "Serving North Carolina, Texas, Tennessee, Georgia",
+  ratingLabel: "5.0 Customer Rating (Read Reviews)",
+  ratingUrl: "https://www.experience.com/reviews/daniel-opirhory-384903",
+  headshotPath: "/headshot.png",
+  socials: [
+    { label: "Facebook", href: "https://www.facebook.com/danopirhoryLO" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/daniel-opirhory/" },
+    { label: "Instagram", href: "https://www.instagram.com/dan_opirhory_mlo/" }
+  ]
+} as const;
 
 export const targetLocations = [
   {

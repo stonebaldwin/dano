@@ -242,6 +242,17 @@ a {
   flex-shrink: 0;
 }
 
+.headshot-avatar {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #d6cebf;
+  background: rgba(255, 255, 255, 0.72);
+  flex-shrink: 0;
+}
+
 .brand-serving {
   font-size: 0.7rem;
   letter-spacing: 0.08em;
@@ -685,6 +696,64 @@ p {
   border-radius: 12px;
   background: rgba(11, 23, 36, 0.54);
   overflow: hidden;
+}
+
+.rate-chart-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.rate-chart-title {
+  color: #f0f4f8;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.rate-chart-subtitle {
+  color: #c3cfda;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rate-chart-current {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+
+.rate-chart-current strong {
+  color: #fff;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.rate-chart-current em {
+  font-style: normal;
+  font-size: 0.82rem;
+  color: #cad5e0;
+}
+
+.rate-chart-current em.is-up {
+  color: #c6786f;
+}
+
+.rate-chart-current em.is-down {
+  color: #82c8a0;
+}
+
+.rate-chart-plot-wrap {
+  border: 1px solid rgba(216, 228, 240, 0.24);
+  border-radius: 12px;
+  background: rgba(11, 23, 36, 0.54);
+  overflow: hidden;
+}
+
+.rate-chart-plot {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .daily-index-head {
