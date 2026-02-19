@@ -175,6 +175,13 @@ export default async function HomePage() {
           </div>
 
           <aside className="hero-panel">
+            <div className="headshot-wrap">
+              <img
+                className="headshot-photo"
+                src="/headshot.png"
+                alt="Headshot of Dan Opirhory"
+              />
+            </div>
             <div className="kicker">Trust Indicators</div>
             <h2>Expertise built for confident decisions.</h2>
             <ul className="list-clean">
@@ -312,7 +319,7 @@ export default async function HomePage() {
               {rollingTestimonials.map((item, index) => (
                 <article key={`${item.name}-${index}`} className="card testimonial-card rolling-testimonial">
                   <div className="review-stars" aria-hidden="true">
-                    {"★".repeat(item.rating)}
+                    {"\u2605".repeat(item.rating)}
                   </div>
                   <p className="testimonial-quote">"{item.quote}"</p>
                   <strong>{item.name}</strong>
