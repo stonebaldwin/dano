@@ -1,14 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { formatNumericInput, parseFormattedNumber } from "@/lib/numberFormat";
 
 type Program = "Conventional" | "FHA" | "VA" | "USDA";
 type DownPaymentMode = "percent" | "amount";
-
-function toNumber(value: string) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
+type FrequencyMode = "yearly" | "monthly";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -34,32 +31,40 @@ function monthlyPrincipalAndInterest(
 
 export default function MortgageCalculator() {
   const [program, setProgram] = useState<Program>("Conventional");
-  const [purchasePrice, setPurchasePrice] = useState("450000");
+  const [purchasePrice, setPurchasePrice] = useState("450,000");
   const [termYears, setTermYears] = useState("30");
   const [downPaymentMode, setDownPaymentMode] = useState<DownPaymentMode>("percent");
   const [downPaymentInput, setDownPaymentInput] = useState("10");
   const [interestRate, setInterestRate] = useState("6.75");
-  const [annualTaxes, setAnnualTaxes] = useState("4200");
-  const [annualInsurance, setAnnualInsurance] = useState("1650");
+  const [taxesInput, setTaxesInput] = useState("4,200");
+  const [taxesMode, setTaxesMode] = useState<FrequencyMode>("yearly");
+  const [insuranceInput, setInsuranceInput] = useState("1,650");
+  const [insuranceMode, setInsuranceMode] = useState<FrequencyMode>("yearly");
+  const [monthlyPmi, setMonthlyPmi] = useState("0");
   const [monthlyHoa, setMonthlyHoa] = useState("120");
-  const [closingCosts, setClosingCosts] = useState("8500");
+  const [closingCosts, setClosingCosts] = useState("8,500");
   const [fhaUfMIPRate, setFhaUfMIPRate] = useState("1.75");
   const [vaFundingFeeRate, setVaFundingFeeRate] = useState("2.15");
   const [financeProgramFee, setFinanceProgramFee] = useState(true);
 
+  const onNumericChange = (setter: (value: string) => void) => (value: string) => {
+    setter(formatNumericInput(value));
+  };
+
   const result = useMemo(() => {
-    const price = Math.max(toNumber(purchasePrice), 0);
-    const years = Math.max(toNumber(termYears), 1);
-    const rate = Math.max(toNumber(interestRate), 0);
-    const taxes = Math.max(toNumber(annualTaxes), 0);
-    const insurance = Math.max(toNumber(annualInsurance), 0);
-    const hoa = Math.max(toNumber(monthlyHoa), 0);
-    const closing = Math.max(toNumber(closingCosts), 0);
+    const price = Math.max(parseFormattedNumber(purchasePrice), 0);
+    const years = Math.max(parseFormattedNumber(termYears), 1);
+    const rate = Math.max(parseFormattedNumber(interestRate), 0);
+    const taxes = Math.max(parseFormattedNumber(taxesInput), 0);
+    const insurance = Math.max(parseFormattedNumber(insuranceInput), 0);
+    const pmi = Math.max(parseFormattedNumber(monthlyPmi), 0);
+    const hoa = Math.max(parseFormattedNumber(monthlyHoa), 0);
+    const closing = Math.max(parseFormattedNumber(closingCosts), 0);
 
     const downPaymentAmount =
       downPaymentMode === "percent"
-        ? (price * Math.max(toNumber(downPaymentInput), 0)) / 100
-        : Math.max(toNumber(downPaymentInput), 0);
+        ? (price * Math.max(parseFormattedNumber(downPaymentInput), 0)) / 100
+        : Math.max(parseFormattedNumber(downPaymentInput), 0);
 
     const cappedDownPayment = Math.min(downPaymentAmount, price);
     const baseLoanAmount = Math.max(price - cappedDownPayment, 0);
@@ -67,11 +72,11 @@ export default function MortgageCalculator() {
     let programFee = 0;
 
     if (program === "FHA") {
-      programFee = baseLoanAmount * (Math.max(toNumber(fhaUfMIPRate), 0) / 100);
+      programFee = baseLoanAmount * (Math.max(parseFormattedNumber(fhaUfMIPRate), 0) / 100);
     }
 
     if (program === "VA") {
-      programFee = baseLoanAmount * (Math.max(toNumber(vaFundingFeeRate), 0) / 100);
+      programFee = baseLoanAmount * (Math.max(parseFormattedNumber(vaFundingFeeRate), 0) / 100);
     }
 
     const financedLoanAmount = financeProgramFee
@@ -79,10 +84,13 @@ export default function MortgageCalculator() {
       : baseLoanAmount;
 
     const monthlyPI = monthlyPrincipalAndInterest(financedLoanAmount, rate, years);
-    const monthlyTaxes = taxes / 12;
-    const monthlyInsurancePayment = insurance / 12;
+    const monthlyTaxes = taxesMode === "monthly" ? taxes : taxes / 12;
+    const monthlyInsurancePayment = insuranceMode === "monthly" ? insurance : insurance / 12;
 
-    const estimatedMonthlyPayment = monthlyPI + monthlyTaxes + monthlyInsurancePayment + hoa;
+    const monthlyPmiPayment = program === "Conventional" || program === "FHA" ? pmi : 0;
+
+    const estimatedMonthlyPayment =
+      monthlyPI + monthlyTaxes + monthlyInsurancePayment + monthlyPmiPayment + hoa;
 
     const cashToClose =
       cappedDownPayment +
@@ -97,22 +105,26 @@ export default function MortgageCalculator() {
       monthlyPI,
       monthlyTaxes,
       monthlyInsurancePayment,
+      monthlyPmiPayment,
       hoa,
       estimatedMonthlyPayment,
       cashToClose
     };
   }, [
-    annualInsurance,
-    annualTaxes,
     closingCosts,
     downPaymentInput,
     downPaymentMode,
     fhaUfMIPRate,
     financeProgramFee,
+    insuranceInput,
+    insuranceMode,
     interestRate,
+    monthlyPmi,
     monthlyHoa,
     program,
     purchasePrice,
+    taxesInput,
+    taxesMode,
     termYears,
     vaFundingFeeRate
   ]);
@@ -139,11 +151,11 @@ export default function MortgageCalculator() {
           <div className="calc-field-grid">
             <label>
               Purchase Price
-              <input value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} />
+              <input value={purchasePrice} onChange={(e) => onNumericChange(setPurchasePrice)(e.target.value)} />
             </label>
             <label>
               Mortgage Term (Years)
-              <input value={termYears} onChange={(e) => setTermYears(e.target.value)} />
+              <input value={termYears} onChange={(e) => onNumericChange(setTermYears)(e.target.value)} />
             </label>
             <div>
               <span className="calc-label">Down Payment</span>
@@ -165,28 +177,66 @@ export default function MortgageCalculator() {
               </div>
               <input
                 value={downPaymentInput}
-                onChange={(e) => setDownPaymentInput(e.target.value)}
+                onChange={(e) => onNumericChange(setDownPaymentInput)(e.target.value)}
               />
             </div>
             <label>
               Interest Rate (%)
-              <input value={interestRate} onChange={(e) => setInterestRate(e.target.value)} />
+              <input value={interestRate} onChange={(e) => onNumericChange(setInterestRate)(e.target.value)} />
             </label>
             <label>
-              Annual Taxes ($)
-              <input value={annualTaxes} onChange={(e) => setAnnualTaxes(e.target.value)} />
+              Property Taxes ($)
+              <div className="calc-toggle-row calc-toggle-row-choice">
+                <button
+                  type="button"
+                  className={`calc-mini-toggle calc-mini-toggle-choice ${taxesMode === "yearly" ? "is-active" : ""}`}
+                  onClick={() => setTaxesMode("yearly")}
+                >
+                  Yearly
+                </button>
+                <button
+                  type="button"
+                  className={`calc-mini-toggle calc-mini-toggle-choice ${taxesMode === "monthly" ? "is-active" : ""}`}
+                  onClick={() => setTaxesMode("monthly")}
+                >
+                  Monthly
+                </button>
+              </div>
+              <input value={taxesInput} onChange={(e) => onNumericChange(setTaxesInput)(e.target.value)} />
             </label>
             <label>
-              Annual Insurance ($)
-              <input value={annualInsurance} onChange={(e) => setAnnualInsurance(e.target.value)} />
+              Home Insurance ($)
+              <div className="calc-toggle-row calc-toggle-row-choice">
+                <button
+                  type="button"
+                  className={`calc-mini-toggle calc-mini-toggle-choice ${insuranceMode === "yearly" ? "is-active" : ""}`}
+                  onClick={() => setInsuranceMode("yearly")}
+                >
+                  Yearly
+                </button>
+                <button
+                  type="button"
+                  className={`calc-mini-toggle calc-mini-toggle-choice ${insuranceMode === "monthly" ? "is-active" : ""}`}
+                  onClick={() => setInsuranceMode("monthly")}
+                >
+                  Monthly
+                </button>
+              </div>
+              <input value={insuranceInput} onChange={(e) => onNumericChange(setInsuranceInput)(e.target.value)} />
             </label>
+            {program === "Conventional" || program === "FHA" ? (
+              <label>
+                Monthly PMI ($)
+                <input value={monthlyPmi} onChange={(e) => onNumericChange(setMonthlyPmi)(e.target.value)} />
+              </label>
+            ) : null}
             <label>
               Monthly HOA ($)
-              <input value={monthlyHoa} onChange={(e) => setMonthlyHoa(e.target.value)} />
+              <input value={monthlyHoa} onChange={(e) => onNumericChange(setMonthlyHoa)(e.target.value)} />
             </label>
             <label>
               Est. Closing Costs ($)
-              <input value={closingCosts} onChange={(e) => setClosingCosts(e.target.value)} />
+              <input value={closingCosts} onChange={(e) => onNumericChange(setClosingCosts)(e.target.value)} />
             </label>
           </div>
 
@@ -194,7 +244,7 @@ export default function MortgageCalculator() {
             <div className="calc-program-box">
               <label>
                 FHA Up-Front MIP (%)
-                <input value={fhaUfMIPRate} onChange={(e) => setFhaUfMIPRate(e.target.value)} />
+                <input value={fhaUfMIPRate} onChange={(e) => onNumericChange(setFhaUfMIPRate)(e.target.value)} />
               </label>
               <label className="calc-check-row">
                 <input
@@ -211,7 +261,7 @@ export default function MortgageCalculator() {
             <div className="calc-program-box">
               <label>
                 VA First-Time Funding Fee (%)
-                <input value={vaFundingFeeRate} onChange={(e) => setVaFundingFeeRate(e.target.value)} />
+                <input value={vaFundingFeeRate} onChange={(e) => onNumericChange(setVaFundingFeeRate)(e.target.value)} />
               </label>
               <label className="calc-check-row">
                 <input
@@ -233,6 +283,9 @@ export default function MortgageCalculator() {
             <div><span>Principal + Interest</span><strong>{formatCurrency(result.monthlyPI)}</strong></div>
             <div><span>Property Taxes</span><strong>{formatCurrency(result.monthlyTaxes)}</strong></div>
             <div><span>Home Insurance</span><strong>{formatCurrency(result.monthlyInsurancePayment)}</strong></div>
+            {program === "Conventional" || program === "FHA" ? (
+              <div><span>PMI</span><strong>{formatCurrency(result.monthlyPmiPayment)}</strong></div>
+            ) : null}
             <div><span>HOA</span><strong>{formatCurrency(result.hoa)}</strong></div>
           </div>
 

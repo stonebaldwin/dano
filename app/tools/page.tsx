@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Mortgage Tools",
+  title: "Mortgage Calculators",
   description:
-    "Mortgage calculators and planning tools for payment, affordability, and refinance analysis."
+    "Mortgage calculators for payment, buydown, refinance, and repayment analysis."
 };
 
 const pages = [
@@ -14,19 +14,19 @@ const pages = [
     href: "/tools/mortgage-calculator"
   },
   {
-    title: "Affordability",
-    body: "Estimate target home price ranges based on monthly budget inputs.",
-    href: "/tools/affordability"
+    title: "Buydown Calculator",
+    body: "Estimate payment impact for temporary and permanent rate buydown scenarios.",
+    href: "/tools/buydown-calculator"
   },
   {
-    title: "Refinance Savings",
+    title: "Refinance Calculator",
     body: "Compare current vs. proposed terms to estimate break-even timing.",
-    href: "/tools/refinance-savings"
+    href: "/tools/refinance-calculator"
   },
   {
-    title: "Closing Cost Estimator",
-    body: "Estimate cash-to-close with lender, third-party, and prepaid costs.",
-    href: "/tools/closing-cost-estimator"
+    title: "Repayment Calculator",
+    body: "View principal and interest payoff over time by month and year.",
+    href: "/tools/repayment-calculator"
   }
 ];
 
@@ -34,10 +34,10 @@ export default function ToolsPage() {
   return (
     <section className="section">
       <div className="container">
-        <div className="kicker">Borrower Tools</div>
-        <h1>Mortgage Planning Tools</h1>
+        <div className="kicker">Borrower Calculators</div>
+        <h1>Mortgage Calculators</h1>
         <p className="section-intro">
-          Use these tools to estimate payment, affordability, and financing
+          Use these calculators to estimate payment, buydown, and financing
           scenarios before speaking with an advisor.
         </p>
         <div className="grid-2">
@@ -45,7 +45,7 @@ export default function ToolsPage() {
             <Link key={page.title} href={page.href} className="card">
               <h3>{page.title}</h3>
               <p>{page.body}</p>
-              <span className="link-arrow">Open tool</span>
+              <span className="link-arrow">Open calculator</span>
             </Link>
           ))}
         </div>

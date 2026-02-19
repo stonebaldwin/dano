@@ -11,7 +11,7 @@ export default function MortgageCalculatorPage() {
   return (
     <section className="section">
       <div className="container">
-        <div className="kicker">Tools</div>
+        <div className="kicker">Calculators</div>
         <h1>Mortgage Calculator</h1>
         <p className="section-intro">
           Compare payment scenarios by loan program. Adjust purchase assumptions,

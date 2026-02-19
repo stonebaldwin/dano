@@ -1,57 +1,75 @@
+export type NavSubItem = {
+  label: string;
+  href: string;
+  children?: Array<{ label: string; href: string }>;
+};
+
 export type NavItem = {
   label: string;
   href: string;
-  description: string;
-  sublinks: Array<{ label: string; href: string }>;
+  description?: string;
+  sublinks: NavSubItem[];
 };
 
 export const navigation: NavItem[] = [
   {
-    label: "Residential",
+    label: "Loan Programs",
     href: "/residential",
     description:
-      "Explore home loan paths for primary residences, first-time buyers, and move-up borrowers.",
+      "Explore residential, investment, and specialty loan options across primary homes, second homes, and investment properties.",
     sublinks: [
       { label: "Conventional", href: "/residential/conventional" },
-      { label: "USDA", href: "/residential/usda" },
       { label: "FHA", href: "/residential/fha" },
-      { label: "VA", href: "/residential/va" }
+      { label: "VA", href: "/residential/va" },
+      { label: "USDA", href: "/residential/usda" },
+      { label: "NCHFA Down Payment Assistance", href: "/residential" },
+      { label: "DSCR Investment", href: "/investment/dscr" },
+      {
+        label: "Construction",
+        href: "/commercial/construction",
+        children: [
+          { label: "New Construction", href: "/commercial/construction/new-construction" },
+          { label: "Renovation", href: "/commercial/construction/fix-and-flip-loans" }
+        ]
+      },
+      { label: "Land Loans", href: "/investment/rental-property" },
+      {
+        label: "Specialty Lending",
+        href: "/commercial/specialty-lending",
+        children: [
+          { label: "Commercial Loans", href: "/commercial" },
+          { label: "HELOCs", href: "/commercial/specialty-lending/helocs" },
+          { label: "Bank Statement Loans", href: "/commercial/specialty-lending" },
+          { label: "1099 Loans", href: "/commercial/specialty-lending" },
+          { label: "Jumbo Loans", href: "/commercial/specialty-lending" },
+          { label: "Bridge Loans", href: "/investment/bridge-loans" },
+          { label: "Reverse Mortgages", href: "/commercial/specialty-lending" },
+          { label: "Buy Before You Sell Loans", href: "/commercial/specialty-lending" }
+        ]
+      }
     ]
   },
   {
-    label: "Investment",
-    href: "/investment",
+    label: "Mortgage Rates",
+    href: "/mortgage-rates",
     description:
-      "Financing strategies for rental properties and portfolio growth in North Carolina markets.",
+      "Track today's mortgage market movement, 30-year fixed trends, and borrower-focused rate context.",
     sublinks: [
-      { label: "DSCR", href: "/investment/dscr" },
-      { label: "Rental Property", href: "/investment/rental-property" },
-      { label: "Portfolio Loans", href: "/investment/portfolio-loans" },
-      { label: "Bridge Loans", href: "/investment/bridge-loans" }
+      { label: "Today's Mortgage Rates", href: "/mortgage-rates" },
+      { label: "Mortgage Calculator", href: "/tools/mortgage-calculator" },
+      { label: "Refinance Calculator", href: "/tools/refinance-calculator" }
     ]
   },
   {
-    label: "Commercial",
-    href: "/commercial",
-    description:
-      "Commercial lending guidance for mixed-use, office, retail, and owner-occupied projects.",
-    sublinks: [
-      { label: "SBA 7(a)", href: "/commercial/sba-7a" },
-      { label: "SBA 504", href: "/commercial/sba-504" },
-      { label: "Multi-Unit", href: "/commercial/multi-unit" },
-      { label: "Owner-Occupied", href: "/commercial/owner-occupied" }
-    ]
-  },
-  {
-    label: "Tools",
+    label: "Calculators",
     href: "/tools",
     description:
-      "Rate, payment, and affordability tools that help borrowers make data-informed decisions.",
+      "Rate and payment calculators that help borrowers make data-informed decisions.",
     sublinks: [
       { label: "Mortgage Calculator", href: "/tools/mortgage-calculator" },
-      { label: "Affordability", href: "/tools/affordability" },
-      { label: "Refinance Savings", href: "/tools/refinance-savings" },
-      { label: "Closing Cost Estimator", href: "/tools/closing-cost-estimator" }
+      { label: "Buydown Calculator", href: "/tools/buydown-calculator" },
+      { label: "Refinance Calculator", href: "/tools/refinance-calculator" },
+      { label: "Repayment Calculator", href: "/tools/repayment-calculator" }
     ]
   },
   {
@@ -65,6 +83,18 @@ export const navigation: NavItem[] = [
       { label: "Buying Guides", href: "/blog/buying-guides" },
       { label: "Refinance", href: "/blog/refinance" },
       { label: "Local Trends", href: "/blog/local-trends" }
+    ]
+  },
+  {
+    label: "Resources",
+    href: "/mortgage-guides",
+    description:
+      "Educational resources, guides, and articles to support borrower decision-making.",
+    sublinks: [
+      { label: "Mortgage Guides", href: "/mortgage-guides" },
+      { label: "All Articles", href: "/blog/articles" },
+      { label: "Market Updates", href: "/blog/market-updates" },
+      { label: "Calculators", href: "/tools" }
     ]
   }
 ];
