@@ -80,9 +80,7 @@ export const navigation: NavItem[] = [
       "Educational resources, guides, and articles to support borrower decision-making.",
     sublinks: [
       { label: "Mortgage Guides", href: "/mortgage-guides" },
-      { label: "All Articles", href: "/blog/articles" },
-      { label: "Market Updates", href: "/blog/market-updates" },
-      { label: "Calculators", href: "/tools" }
+      { label: "All Articles", href: "/blog/articles" }
     ]
   }
 ];

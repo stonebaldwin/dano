@@ -404,9 +404,6 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
-          <p className="muted-meta">
-            Live reviews from Experience.com. Hover to pause scrolling.
-          </p>
         </div>
       </section>
 
