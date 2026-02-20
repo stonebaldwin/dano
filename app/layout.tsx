@@ -72,7 +72,7 @@ export default function RootLayout({
               <div className="footer-brand-block">
                 <strong>Dan Opirhory</strong>
                 <p className="footer-intro">
-                  Institutional-grade mortgage guidance with local North Carolina market expertise for buyers, investors, and business owners.
+                  Institutional-grade mortgage guidance with local market expertise for buyers, investors, and business owners.
                 </p>
                 <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
                   Apply Now

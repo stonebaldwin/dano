@@ -64,12 +64,8 @@ export default function SiteHeader({ items }: SiteHeaderProps) {
                     <div className="mega-primary">
                       <h3>{item.label}</h3>
                       <p>{item.description}</p>
-                      <Link className="link-arrow" href={item.href} onClick={() => setOpenMenu(null)}>
-                        View {item.label}
-                      </Link>
                     </div>
                     <div className="mega-secondary">
-                      <h4>Popular Topics</h4>
                       <ul>
                         {item.sublinks.map((sub) => (
                           <li key={sub.label} className={sub.children?.length ? "mega-subgroup" : ""}>

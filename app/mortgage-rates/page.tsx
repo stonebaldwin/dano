@@ -3,7 +3,7 @@ import { getMortgageRatesSnapshot } from "@/lib/mortgageRates";
 
 export const metadata: Metadata = {
   title: "Mortgage Rates",
-  description: "Today's mortgage rates sourced from Mortgage News Daily with current market updates."
+  description: "Today's mortgage rates sourced from Optimal Blue market index data with current market updates."
 };
 
 export default async function MortgageRatesPage() {
@@ -15,7 +15,7 @@ export default async function MortgageRatesPage() {
         <div className="kicker">Mortgage Rates</div>
         <h1>Today&apos;s Mortgage Rates</h1>
         <p className="section-intro">
-          Daily market rates and trend data sourced from Mortgage News Daily.
+          Daily market rates and trend data sourced from Optimal Blue.
           {snapshot.updatedLabel ? ` Last updated: ${snapshot.updatedLabel}.` : ""}
         </p>
 
@@ -66,7 +66,7 @@ export default async function MortgageRatesPage() {
             <p className="muted-meta">
               Source:{" "}
               <a href={snapshot.sourceUrl} target="_blank" rel="noreferrer">
-                Mortgage News Daily
+                {new URL(snapshot.sourceUrl).hostname}
               </a>
             </p>
           </article>

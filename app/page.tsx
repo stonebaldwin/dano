@@ -3,6 +3,7 @@ import Link from "next/link";
 import ArticleCarousel from "@/app/components/ArticleCarousel";
 import FaqAccordion from "@/app/components/FaqAccordion";
 import LoanProgramsGrid from "@/app/components/LoanProgramsGrid";
+import RateTrendsWidget from "@/app/components/RateTrendsWidget";
 import { getAllArticles } from "@/lib/articles";
 import { advisorProfile, siteConfig, targetLocations } from "@/lib/config";
 import { getExperienceReviews } from "@/lib/experienceReviews";
@@ -128,67 +129,6 @@ const faqs = [
   }
 ];
 
-function buildSmoothPath(points: string) {
-  if (!points) return "";
-  const pairs = points.split(" ").map((pair) => {
-    const [xRaw, yRaw] = pair.split(",");
-    return { x: Number(xRaw), y: Number(yRaw) };
-  });
-  if (pairs.length < 2) return "";
-
-  let path = `M ${pairs[0].x} ${pairs[0].y}`;
-  for (let i = 1; i < pairs.length; i += 1) {
-    const prev = pairs[i - 1];
-    const curr = pairs[i];
-    const midX = (prev.x + curr.x) / 2;
-    const midY = (prev.y + curr.y) / 2;
-    path += ` Q ${prev.x} ${prev.y}, ${midX} ${midY}`;
-  }
-  const last = pairs[pairs.length - 1];
-  path += ` T ${last.x} ${last.y}`;
-  return path;
-}
-
-function buildRateTicks(minRate: number, maxRate: number) {
-  const start = Math.floor(minRate * 10) / 10;
-  const end = Math.ceil(maxRate * 10) / 10;
-  const ticks: number[] = [];
-  for (let value = start; value <= end + 0.0001; value += 0.1) {
-    ticks.push(Number(value.toFixed(1)));
-  }
-  return ticks.length > 1 ? ticks : [start, Number((start + 0.1).toFixed(1))];
-}
-
-function formatDisplayDate(value: string) {
-  if (!value) return value;
-  const usMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if (!usMatch) return value;
-
-  const month = Number(usMatch[1]);
-  const day = Number(usMatch[2]);
-  let year = Number(usMatch[3]);
-  if (usMatch[3].length === 2) year += 2000;
-
-  const d = new Date(year, month - 1, day);
-  if (Number.isNaN(d.getTime())) return value;
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "2-digit",
-    year: "numeric"
-  }).format(d);
-}
-
-function formatGraphDate(value: string) {
-  if (!value) return value;
-  const usMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if (!usMatch) return value;
-  const month = Number(usMatch[1]);
-  const yearRaw = usMatch[3];
-  const year2 = yearRaw.length === 2 ? yearRaw : yearRaw.slice(-2);
-  return `${month}/${year2}`;
-}
-
 function socialIcon(label: string) {
   if (label === "Facebook") {
     return (
@@ -213,101 +153,64 @@ function socialIcon(label: string) {
 
 export default async function HomePage() {
   const advisorPhoneDial = advisorProfile.phone.replace(/\D/g, "");
-  const now = new Date();
-  const fourMonthsAgo = new Date(now);
-  fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
   const articles = getAllArticles();
   const experienceTestimonials = await getExperienceReviews("daniel-opirhory-384903", 10);
   const rateSnapshot = await getMortgageRatesSnapshot();
   const testimonials =
     experienceTestimonials.length > 0 ? experienceTestimonials : fallbackTestimonials;
   const rollingTestimonials = [...testimonials, ...testimonials];
-  const current30Fixed = rateSnapshot.products.find((p) => p.key === "30 Yr. Fixed");
-  const history30Fixed = (rateSnapshot.historyByProduct["30 Yr. Fixed"] ?? []).filter(
-    (point) => point.rate > 0
-  );
-  const fourMonthHistory30Fixed = history30Fixed.filter((point) => {
-    const pointDate = new Date(point.isoDate);
-    return !Number.isNaN(pointDate.getTime()) && pointDate >= fourMonthsAgo;
-  });
-
-  const chartSeries =
-    fourMonthHistory30Fixed.length > 0
-      ? [...fourMonthHistory30Fixed]
-      : [...history30Fixed.slice(-84)];
-  if (current30Fixed && current30Fixed.rate > 0) {
-    const last = chartSeries[chartSeries.length - 1];
-    if (!last || last.rate !== current30Fixed.rate) {
-      chartSeries.push({
-        dateLabel: rateSnapshot.updatedLabel ?? "Today",
-        isoDate: new Date().toISOString().slice(0, 10),
-        rate: current30Fixed.rate,
-        change: current30Fixed.change
-      });
-    }
-  }
-
-  const rates = chartSeries.map((point) => point.rate);
-  const minRate = rates.length ? Math.min(...rates) : 0;
-  const maxRate = rates.length ? Math.max(...rates) : 0.1;
-  const xTicks = buildRateTicks(minRate, maxRate);
-
-  const chart = {
-    width: 620,
-    height: 300,
-    marginTop: 14,
-    marginRight: 12,
-    marginBottom: 36,
-    marginLeft: 64
+  const trendSeriesSeed: Array<{
+    key: (typeof rateSnapshot.products)[number]["key"];
+    color: string;
+  }> = [
+    { key: "30 Yr. Fixed", color: "#23b6f2" },
+    { key: "15 Yr. Fixed", color: "#50BFE4" },
+    { key: "30 Yr. FHA", color: "#D8743D" },
+    { key: "30 Yr. VA", color: "#F2C45C" }
+  ];
+  const trendLabelByKey: Partial<Record<(typeof rateSnapshot.products)[number]["key"], string>> = {
+    "30 Yr. Fixed": "30 yr Conforming",
+    "15 Yr. Fixed": "15 yr Conforming",
+    "30 Yr. FHA": "FHA",
+    "30 Yr. VA": "VA"
   };
-  const plotWidth = chart.width - chart.marginLeft - chart.marginRight;
-  const plotHeight = chart.height - chart.marginTop - chart.marginBottom;
-  const xMin = xTicks[0];
-  const xMax = xTicks[xTicks.length - 1];
-  const xRange = xMax - xMin || 0.1;
 
-  const chartPoints = chartSeries
-    .map((point) => {
-      const date = new Date(point.isoDate);
-      return Number.isNaN(date.getTime())
-        ? null
-        : {
-            point,
-            ts: date.getTime()
-          };
+  const trendSeries = trendSeriesSeed
+    .map((entry) => {
+      const product = rateSnapshot.products.find((item) => item.key === entry.key);
+      const currentRate = product?.rate ?? 0;
+      const currentChange = product?.change ?? 0;
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const points = (rateSnapshot.historyByProduct[entry.key] ?? [])
+        .filter((point) => point.rate > 0)
+        .map((point) => ({
+          isoDate: point.isoDate,
+          rate: point.rate
+        }));
+
+      if (currentRate > 0) {
+        const latest = points[points.length - 1];
+        if (!latest || latest.isoDate !== todayIso || latest.rate !== currentRate) {
+          points.push({
+            isoDate: todayIso,
+            rate: currentRate
+          });
+        }
+      }
+
+      return {
+        key: entry.key,
+        label: trendLabelByKey[entry.key] ?? entry.key,
+        color: entry.color,
+        currentRate,
+        currentChange,
+        points
+      };
     })
-    .filter((value): value is { point: (typeof chartSeries)[number]; ts: number } => value !== null);
-
-  const startTs = chartPoints[0]?.ts ?? fourMonthsAgo.getTime();
-  const endTs = chartPoints[chartPoints.length - 1]?.ts ?? now.getTime();
-  const tsRange = Math.max(1, endTs - startTs);
-
-  const points = chartPoints
-    .map(({ point, ts }) => {
-      const x = chart.marginLeft + ((ts - startTs) / tsRange) * plotWidth;
-      const y = chart.marginTop + plotHeight - ((point.rate - xMin) / xRange) * plotHeight;
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(" ");
-  const trendPath = buildSmoothPath(points);
-
-  const monthTickFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
-  const monthTicks: Array<{ x: number; label: string }> = [];
-  const monthCursor = new Date(fourMonthsAgo.getFullYear(), fourMonthsAgo.getMonth(), 1);
-  while (monthCursor.getTime() <= endTs) {
-    const tickTs = monthCursor.getTime();
-    const ratio = Math.min(1, Math.max(0, (tickTs - startTs) / tsRange));
-    monthTicks.push({
-      x: chart.marginLeft + ratio * plotWidth,
-      label: monthTickFormatter.format(monthCursor)
-    });
-    monthCursor.setMonth(monthCursor.getMonth() + 1);
-  }
-
-  const latestPoint = chartSeries[chartSeries.length - 1];
-  const previousPoint = chartSeries.length > 1 ? chartSeries[chartSeries.length - 2] : null;
-  const latestRate = latestPoint?.rate ?? 0;
-  const latestChange = previousPoint && latestPoint ? latestPoint.rate - previousPoint.rate : 0;
+    .filter((entry) => entry.points.length >= 2);
+  const conventionalSeries = trendSeries.find((entry) => entry.key === "30 Yr. Fixed");
+  const latestRate = conventionalSeries?.currentRate ?? 0;
+  const latestChange = conventionalSeries?.currentChange ?? 0;
 
   return (
     <>
@@ -348,7 +251,21 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <aside className="hero-panel rate-chart-card" />
+          <aside className="hero-panel rate-chart-card">
+            <h2 className="rate-chart-title">30 Year Conforming Rate</h2>
+            <div className="rate-chart-current">
+              <strong>{latestRate.toFixed(3)}%</strong>
+              <em className={latestChange > 0 ? "is-up" : latestChange < 0 ? "is-down" : ""}>
+                {latestChange > 0 ? "+" : ""}
+                {latestChange.toFixed(3)}%
+              </em>
+            </div>
+            <RateTrendsWidget
+              series={trendSeries}
+              updatedLabel={rateSnapshot.updatedLabel}
+              fetchedAtEtLabel={rateSnapshot.fetchedAtEtLabel}
+            />
+          </aside>
         </div>
       </section>
 

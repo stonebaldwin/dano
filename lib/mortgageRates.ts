@@ -1,4 +1,8 @@
 const MND_RATES_URL = "https://www.mortgagenewsdaily.com/mortgage-rates";
+const OBMMI_CHART_DATA_URL =
+  "https://PRD-NC-OBMMI-FrontDoor-endpoint-cddkegaabwhpa6aa.a01.azurefd.net/api/blob/chartData.json";
+const OBMMI_EXTREMES_URL =
+  "https://PRD-NC-OBMMI-FrontDoor-endpoint-cddkegaabwhpa6aa.a01.azurefd.net/api/blob/extremes.json";
 const DEFAULT_REVALIDATE_SECONDS = 60 * 60 * 6;
 const HISTORY_POINTS = 124;
 
@@ -49,8 +53,16 @@ const PRODUCT_KEYS: ProductKey[] = [
 ];
 
 const PRODUCT_PATTERNS: Record<ProductKey, string[]> = {
-  "30 Yr. Fixed": ["30yrfixed", "30yearfixed", "30fixed", "conventional30"],
-  "15 Yr. Fixed": ["15yrfixed", "15yearfixed", "15fixed", "conventional15"],
+  "30 Yr. Fixed": [
+    "30yrfixed",
+    "30yearfixed",
+    "30fixed",
+    "conventional30",
+    "30yrconforming",
+    "conforming30yr",
+    "30yrconventional"
+  ],
+  "15 Yr. Fixed": ["15yrfixed", "15yearfixed", "15fixed", "conventional15", "15yrconforming"],
   "30 Yr. Jumbo": ["30yrjumbo", "30yearjumbo", "jumbo30"],
   "7/6 SOFR ARM": ["76sofrarm", "sofrarm", "arm"],
   "30 Yr. FHA": ["30yrfha", "30yearfha", "fha30"],
@@ -461,18 +473,189 @@ function parseMndRows(html: string) {
   return rows;
 }
 
+function mapObCanonicalProductKey(value: string | null): ProductKey | null {
+  if (!value) return null;
+  const token = normalizeToken(value);
+  if (token.includes("fico") || token.includes("ltv")) return null;
+  if (token.includes("30yrconforming") || token.includes("conforming30yrfixed")) return "30 Yr. Fixed";
+  if (token.includes("15yrconforming") || token.includes("conforming15yrfixed")) return "15 Yr. Fixed";
+  if (token.includes("30yrfha") || token.includes("fha30yrfixed")) return "30 Yr. FHA";
+  if (token.includes("30yrva") || token.includes("va30yrfixed")) return "30 Yr. VA";
+  if (token.includes("30yrjumbo") || token.includes("jumbo30yrfixed")) return "30 Yr. Jumbo";
+  return null;
+}
+
+function parseObHistorySeries(input: unknown) {
+  const rows = asArray(input);
+  const sorted = rows
+    .map((entry) => {
+      const tuple = asArray(entry);
+      if (tuple.length < 2) return null;
+      const ts = asTimestamp(tuple[0]);
+      const rate = parseNumber(tuple[1]);
+      if (ts === null || rate <= 0) return null;
+      const dateLabel = toUsDateLabelFromTimestamp(ts);
+      if (!dateLabel) return null;
+      return {
+        ts,
+        dateLabel,
+        isoDate: toIsoDate(dateLabel),
+        rate
+      };
+    })
+    .filter((row): row is { ts: number; dateLabel: string; isoDate: string; rate: number } => Boolean(row))
+    .sort((a, b) => a.ts - b.ts);
+
+  return sorted.map((row, index) => {
+    const previous = index > 0 ? sorted[index - 1] : null;
+    return {
+      dateLabel: row.dateLabel,
+      isoDate: row.isoDate,
+      rate: row.rate,
+      change: previous ? Number((row.rate - previous.rate).toFixed(3)) : 0
+    };
+  });
+}
+
+function parseMndHeaderCurrentRates(html: string) {
+  const parseOne = (productPattern: RegExp) => {
+    const blockMatch = html.match(productPattern);
+    if (!blockMatch) return null;
+    const block = blockMatch[0];
+    const priceMatch = block.match(/<div class="price">\s*([0-9.]+)\s*%?\s*<\/div>/i);
+    const rateMatch = block.match(/<div class="rate[^"]*">\s*([^<]+)\s*<\/div>/i);
+    const rate = parseNumber(priceMatch?.[1] ?? "");
+    const changeText = (rateMatch?.[1] ?? "").replace(/&#x2B;|&plus;/gi, "+").replace(/&minus;/gi, "-");
+    const change = parseNumber(changeText);
+    if (rate <= 0) return null;
+    return { rate, change };
+  };
+
+  return {
+    fixed30: parseOne(/<div class="product">\s*30YR Fixed Rate\s*<\/div>[\s\S]*?<\/a>[\s\S]*?<\/div>/i),
+    fixed15: parseOne(/<div class="product">\s*15YR Fixed Rate\s*<\/div>[\s\S]*?<\/a>[\s\S]*?<\/div>/i)
+  };
+}
+
+async function getOptimalBlueSnapshot(): Promise<MortgageRatesSnapshot> {
+  try {
+    const [chartResponse, extremesResponse] = await Promise.all([
+      fetch(OBMMI_CHART_DATA_URL, {
+        cache: "no-store",
+        headers: { Accept: "application/json" }
+      }),
+      fetch(OBMMI_EXTREMES_URL, {
+        cache: "no-store",
+        headers: { Accept: "application/json" }
+      })
+    ]);
+
+    if (!chartResponse.ok || !extremesResponse.ok) {
+      return fallbackSnapshot(OBMMI_CHART_DATA_URL);
+    }
+
+    const chartPayload = (await chartResponse.json()) as unknown;
+    const extremesPayload = (await extremesResponse.json()) as unknown;
+
+    const historyByProduct = emptyHistoryByProduct();
+    for (const row of asArray(chartPayload)) {
+      const series = asObject(row);
+      if (!series) continue;
+      const seriesName = asString(readField(series, ["name", "label", "product", "program"]));
+      const key = mapObCanonicalProductKey(seriesName);
+      if (!key) continue;
+      const data = parseObHistorySeries(readField(series, ["data", "series", "history", "points"]));
+      if (data.length > 0 && historyByProduct[key].length === 0) {
+        historyByProduct[key] = data.slice(-HISTORY_POINTS);
+      }
+    }
+
+    const productMap = new Map<ProductKey, ProductRate>();
+    const extremesObject = asObject(extremesPayload);
+    if (extremesObject) {
+      for (const [rawKey, rawValue] of Object.entries(extremesObject)) {
+        const row = asObject(rawValue);
+        if (!row) continue;
+        const displayName = asString(readField(row, ["displayName", "name", "label"]));
+        const key = mapObCanonicalProductKey(displayName) ?? mapObCanonicalProductKey(rawKey);
+        if (!key) continue;
+
+        const rate = parseNumber(readField(row, ["current", "rate", "value"]));
+        const change = parseNumber(readField(row, ["lastChange", "change", "dailyChange", "delta"]));
+        productMap.set(key, {
+          key,
+          rate: rate > 0 ? rate : 0,
+          change
+        });
+      }
+    }
+
+    const products = PRODUCT_KEYS.map((key) => {
+      const current = productMap.get(key);
+      if (current && current.rate > 0) return current;
+      const latest = historyByProduct[key][historyByProduct[key].length - 1];
+      return latest ? { key, rate: latest.rate, change: latest.change } : { key, rate: 0, change: 0 };
+    });
+
+    const updatedLabel = deriveUpdatedLabel(asObject(extremesPayload) ?? {}, products, historyByProduct);
+
+    return {
+      sourceUrl: OBMMI_CHART_DATA_URL,
+      updatedLabel,
+      fetchedAtEtLabel: formatEtTimestamp(),
+      products,
+      history30YrFixed: historyByProduct["30 Yr. Fixed"],
+      historyByProduct,
+      umbs30Yr: {
+        coupon: null,
+        current: 0,
+        change: 0,
+        history: [],
+        sourceUrl: OBMMI_CHART_DATA_URL
+      }
+    };
+  } catch {
+    return fallbackSnapshot(OBMMI_CHART_DATA_URL);
+  }
+}
+
 async function getMndFallbackSnapshot(): Promise<MortgageRatesSnapshot> {
   try {
     const response = await fetch(MND_RATES_URL, {
-      next: { revalidate: getRevalidateSeconds() },
+      cache: "no-store",
       headers: {
         Accept: "text/html,application/xhtml+xml"
       }
     });
     if (!response.ok) return fallbackSnapshot(MND_RATES_URL);
     const html = await response.text();
+    const headerCurrent = parseMndHeaderCurrentRates(html);
     const rows = parseMndRows(html);
-    if (rows.length === 0) return fallbackSnapshot(MND_RATES_URL);
+    if (rows.length === 0) {
+      if (!headerCurrent.fixed30 && !headerCurrent.fixed15) return fallbackSnapshot(MND_RATES_URL);
+      const base = fallbackSnapshot(MND_RATES_URL);
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const todayLabel = toUsDateLabel(todayIso);
+      if (headerCurrent.fixed30) {
+        base.products = base.products.map((p) =>
+          p.key === "30 Yr. Fixed" ? { key: p.key, rate: headerCurrent.fixed30!.rate, change: headerCurrent.fixed30!.change } : p
+        );
+        base.historyByProduct["30 Yr. Fixed"] = [
+          { dateLabel: todayLabel, isoDate: todayIso, rate: headerCurrent.fixed30.rate, change: headerCurrent.fixed30.change }
+        ];
+        base.history30YrFixed = base.historyByProduct["30 Yr. Fixed"];
+      }
+      if (headerCurrent.fixed15) {
+        base.products = base.products.map((p) =>
+          p.key === "15 Yr. Fixed" ? { key: p.key, rate: headerCurrent.fixed15!.rate, change: headerCurrent.fixed15!.change } : p
+        );
+        base.historyByProduct["15 Yr. Fixed"] = [
+          { dateLabel: todayLabel, isoDate: todayIso, rate: headerCurrent.fixed15.rate, change: headerCurrent.fixed15.change }
+        ];
+      }
+      base.updatedLabel = todayLabel;
+      return base;
+    }
 
     const updatedLabelMatch = html.match(/Last Updated:\s*([0-9/]+)/i);
     const updatedLabel = updatedLabelMatch ? updatedLabelMatch[1] : rows[0].dateLabel;
@@ -502,6 +685,21 @@ async function getMndFallbackSnapshot(): Promise<MortgageRatesSnapshot> {
       const fallback = hist[hist.length - 1];
       return fallback ? { key, rate: fallback.rate, change: fallback.change } : { key, rate: 0, change: 0 };
     });
+
+    if (headerCurrent.fixed30 && headerCurrent.fixed30.rate > 0) {
+      const target = products.find((p) => p.key === "30 Yr. Fixed");
+      if (target) {
+        target.rate = headerCurrent.fixed30.rate;
+        target.change = headerCurrent.fixed30.change;
+      }
+    }
+    if (headerCurrent.fixed15 && headerCurrent.fixed15.rate > 0) {
+      const target = products.find((p) => p.key === "15 Yr. Fixed");
+      if (target) {
+        target.rate = headerCurrent.fixed15.rate;
+        target.change = headerCurrent.fixed15.change;
+      }
+    }
 
     return {
       sourceUrl: MND_RATES_URL,
@@ -609,5 +807,36 @@ function normalizeSnapshot(payload: JsonRecord, sourceUrl: string): MortgageRate
 }
 
 export async function getMortgageRatesSnapshot(): Promise<MortgageRatesSnapshot> {
-  return getMndFallbackSnapshot();
+  const [mndSnapshot, optimalBlueSnapshot] = await Promise.all([
+    getMndFallbackSnapshot(),
+    getOptimalBlueSnapshot()
+  ]);
+
+  const hasObRates = optimalBlueSnapshot.products.some((product) => product.rate > 0);
+  if (!hasObRates) return mndSnapshot;
+
+  const mergedProducts = optimalBlueSnapshot.products.map((product) => {
+    if (product.key === "30 Yr. Fixed" || product.key === "15 Yr. Fixed") {
+      const mndProduct = mndSnapshot.products.find((p) => p.key === product.key);
+      if (mndProduct && mndProduct.rate > 0) return { ...mndProduct };
+    }
+    return product;
+  });
+
+  const mergedHistoryByProduct = { ...optimalBlueSnapshot.historyByProduct };
+  if ((mndSnapshot.historyByProduct["30 Yr. Fixed"] ?? []).length >= 14) {
+    mergedHistoryByProduct["30 Yr. Fixed"] = mndSnapshot.historyByProduct["30 Yr. Fixed"];
+  }
+  if ((mndSnapshot.historyByProduct["15 Yr. Fixed"] ?? []).length >= 14) {
+    mergedHistoryByProduct["15 Yr. Fixed"] = mndSnapshot.historyByProduct["15 Yr. Fixed"];
+  }
+
+  return {
+    ...optimalBlueSnapshot,
+    sourceUrl: mndSnapshot.sourceUrl,
+    updatedLabel: mndSnapshot.updatedLabel ?? optimalBlueSnapshot.updatedLabel,
+    products: mergedProducts,
+    history30YrFixed: mergedHistoryByProduct["30 Yr. Fixed"],
+    historyByProduct: mergedHistoryByProduct
+  };
 }

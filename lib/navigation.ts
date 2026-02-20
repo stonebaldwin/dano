@@ -50,23 +50,11 @@ export const navigation: NavItem[] = [
     ]
   },
   {
-    label: "Mortgage Rates",
-    href: "/mortgage-rates",
-    description:
-      "Track today's mortgage market movement, 30-year fixed trends, and borrower-focused rate context.",
-    sublinks: [
-      { label: "Today's Mortgage Rates", href: "/mortgage-rates" },
-      { label: "Mortgage Calculator", href: "/tools/mortgage-calculator" },
-      { label: "Refinance Calculator", href: "/tools/refinance-calculator" }
-    ]
-  },
-  {
     label: "Calculators",
     href: "/tools",
     description:
       "Rate and payment calculators that help borrowers make data-informed decisions.",
     sublinks: [
-      { label: "Mortgage Calculator", href: "/tools/mortgage-calculator" },
       { label: "Buydown Calculator", href: "/tools/buydown-calculator" },
       { label: "Refinance Calculator", href: "/tools/refinance-calculator" },
       { label: "Repayment Calculator", href: "/tools/repayment-calculator" }
