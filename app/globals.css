@@ -1637,6 +1637,64 @@ p {
   margin-top: 0.25rem;
 }
 
+.loan-type-buttons {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.loan-type-btn {
+  width: 100%;
+  border: 1px solid #d5cec3;
+  border-radius: 10px;
+  background: #fff;
+  color: #1b3149;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-height: 42px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.loan-type-btn:hover {
+  background: #1b3149;
+  border-color: #1b3149;
+  color: #fff;
+}
+
+.loan-step-widget {
+  margin-top: 0.9rem;
+}
+
+.loan-step-question {
+  margin: 0 0 0.7rem;
+  color: #2d2d2d;
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.loan-step-options {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.loan-step-back {
+  margin-top: 0.7rem;
+  border: 0;
+  background: transparent;
+  color: #1b3149;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+}
+
 .faq-list {
   display: grid;
   gap: 0.75rem;

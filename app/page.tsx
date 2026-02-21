@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import ArticleCarousel from "@/app/components/ArticleCarousel";
 import FaqAccordion from "@/app/components/FaqAccordion";
+import LoanApplicationWidget from "@/app/components/LoanApplicationWidget";
 import LoanProgramsGrid from "@/app/components/LoanProgramsGrid";
 import RateTrendsWidget from "@/app/components/RateTrendsWidget";
 import { getAllArticles } from "@/lib/articles";
@@ -441,21 +442,8 @@ export default async function HomePage() {
 
           <article className="card card-soft">
             <div className="kicker">Simple Process</div>
-            <h2>Move forward with less stress.</h2>
-            <ol className="process-list">
-              <li>
-                <strong>Apply Online</strong>
-                <p>Complete a secure application and share key financial details.</p>
-              </li>
-              <li>
-                <strong>Get Pre-Approved</strong>
-                <p>Review your options, payment strategy, and ideal loan structure.</p>
-              </li>
-              <li>
-                <strong>Close with Confidence</strong>
-                <p>Execute with clear communication through underwriting and closing.</p>
-              </li>
-            </ol>
+            <h2>What type of loan are you looking for?</h2>
+            <LoanApplicationWidget />
           </article>
         </div>
       </section>
