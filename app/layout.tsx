@@ -62,7 +62,7 @@ export default function RootLayout({
                   Existing Application
                 </a>
                 <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
-                  Apply Now
+                  Get Pre-Approved
                 </a>
               </div>
             </div>
@@ -76,7 +76,7 @@ export default function RootLayout({
                   Institutional-grade mortgage guidance with local market expertise for buyers, investors, and business owners.
                 </p>
                 <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
-                  Apply Now
+                  Get Pre-Approved
                 </a>
               </div>
 

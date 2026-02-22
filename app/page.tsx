@@ -467,7 +467,7 @@ export default async function HomePage() {
             </p>
             <div className="cta-row">
               <a className="apply-btn" href={siteConfig.defaultApplyNowUrl} target="_blank" rel="noreferrer">
-                Apply Now
+                Get Pre-Approved
               </a>
               <a className="ghost-btn" href="https://calendly.com/dopirhory-alcova/30min" target="_blank" rel="noreferrer">
                 Schedule a Call

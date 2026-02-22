@@ -39,7 +39,7 @@ export const navigation: NavItem[] = [
       { label: "Purchase Loans", href: "/residential" },
       { label: "Refinance Loans", href: "/residential/refinance" },
       { label: "Home Equity Loans", href: "/commercial/specialty-lending/helocs" },
-      { label: "NCHFA Down Payment Assistance", href: "/residential" },
+      { label: "NCHFA Down Payment Assistance", href: "/residential/nchfa-down-payment-assistance" },
       { label: "Specialty Lending", href: "/commercial/specialty-lending" }
     ]
   },

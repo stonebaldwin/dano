@@ -29,6 +29,11 @@ const pages = [
     href: "/residential/usda"
   },
   {
+    title: "NCHFA Down Payment Assistance",
+    body: "State-backed homebuyer support with forgivable second-mortgage options.",
+    href: "/residential/nchfa-down-payment-assistance"
+  },
+  {
     title: "DSCR",
     body: "Investor-focused qualification based on rental cash-flow performance.",
     href: "/investment/dscr"
