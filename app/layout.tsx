@@ -3,6 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 import SiteHeader from "@/app/components/SiteHeader";
 import ScrollPageBackground from "@/app/components/ScrollPageBackground";
+import RobotHelper from "@/app/components/RobotHelper";
 import { siteConfig } from "@/lib/config";
 import { legalPages } from "@/lib/legal";
 import { navigation } from "@/lib/navigation";
@@ -119,6 +120,7 @@ export default function RootLayout({
               </ul>
             </div>
           </footer>
+          <RobotHelper />
         </div>
         <script
           type="application/ld+json"

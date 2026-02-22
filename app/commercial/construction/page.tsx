@@ -9,7 +9,7 @@ export default function ConstructionLoansPage() {
   return (
     <section className="section">
       <div className="container">
-        <div className="kicker">Loan Programs</div>
+        <div className="kicker">Loan Options</div>
         <h1>Construction Loans</h1>
         <p className="section-intro">
           Review construction loan structures for new home builds, value-add projects, and unique financing scenarios.

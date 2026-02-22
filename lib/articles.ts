@@ -41,7 +41,7 @@ const seedArticles: Article[] = [
     title: "FHA and Conventional Updates: What Borrowers Should Watch",
     excerpt:
       "A practical summary of loan program considerations that may influence payment and approval pathways.",
-    category: "Loan Programs",
+    category: "Loan Options",
     author: "Dan O Team",
     publishedAt: "2026-01-20",
     updatedAt: "2026-01-20",

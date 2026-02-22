@@ -94,7 +94,7 @@ export default function SiteHeader({ items }: SiteHeaderProps) {
               <>
                 {isExternal ? (
                   <a
-                    className="menu-link"
+                    className="menu-link menu-link-direct"
                     href={item.href}
                     target="_blank"
                     rel="noreferrer"
@@ -103,7 +103,7 @@ export default function SiteHeader({ items }: SiteHeaderProps) {
                     {item.label}
                   </a>
                 ) : (
-                  <Link className="menu-link" href={item.href} onClick={() => setOpenMenu(null)}>
+                  <Link className="menu-link menu-link-direct" href={item.href} onClick={() => setOpenMenu(null)}>
                     {item.label}
                   </Link>
                 )}

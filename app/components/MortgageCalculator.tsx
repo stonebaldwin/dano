@@ -133,7 +133,7 @@ export default function MortgageCalculator() {
 
   return (
     <div className="calculator-wrap">
-      <div className="calculator-tabs" role="tablist" aria-label="Loan Program Tabs">
+      <div className="calculator-tabs" role="tablist" aria-label="Loan Options Tabs">
         {(["Conventional", "FHA", "VA", "USDA"] as Program[]).map((tab) => (
           <button
             key={tab}

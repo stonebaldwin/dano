@@ -252,20 +252,9 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <aside className="hero-panel rate-chart-card">
-            <h2 className="rate-chart-title">30 Year Conforming Rate</h2>
-            <div className="rate-chart-current">
-              <strong>{latestRate.toFixed(3)}%</strong>
-              <em className={latestChange > 0 ? "is-up" : latestChange < 0 ? "is-down" : ""}>
-                {latestChange > 0 ? "+" : ""}
-                {latestChange.toFixed(3)}%
-              </em>
-            </div>
-            <RateTrendsWidget
-              series={trendSeries}
-              updatedLabel={rateSnapshot.updatedLabel}
-              fetchedAtEtLabel={rateSnapshot.fetchedAtEtLabel}
-            />
+          <aside className="hero-panel hero-questionnaire-card">
+            <h2>What type of loan are you looking for?</h2>
+            <LoanApplicationWidget />
           </aside>
         </div>
       </section>
@@ -312,26 +301,20 @@ export default async function HomePage() {
             </div>
           </article>
           <div className="authority-side">
-            <article className="card card-soft">
-              <h3>High-Context Advice</h3>
-              <p>
-                Strategic recommendations tailored to your timeline, property type,
-                and long-term financial goals.
-              </p>
-            </article>
-            <article className="card card-soft">
-              <h3>Fast, Transparent Communication</h3>
-              <p>
-                Clear milestones and proactive updates so you always know what is
-                happening next.
-              </p>
-            </article>
-            <article className="card card-soft">
-              <h3>Execution You Can Trust</h3>
-              <p>
-                Process rigor from pre-approval to close, reducing surprises and
-                helping transactions stay on track.
-              </p>
+            <article className="card rate-chart-card">
+              <h2 className="rate-chart-title">30 Year Conforming Rate</h2>
+              <div className="rate-chart-current">
+                <strong>{latestRate.toFixed(3)}%</strong>
+                <em className={latestChange > 0 ? "is-up" : latestChange < 0 ? "is-down" : ""}>
+                  {latestChange > 0 ? "+" : ""}
+                  {latestChange.toFixed(3)}%
+                </em>
+              </div>
+              <RateTrendsWidget
+                series={trendSeries}
+                updatedLabel={rateSnapshot.updatedLabel}
+                fetchedAtEtLabel={rateSnapshot.fetchedAtEtLabel}
+              />
             </article>
           </div>
         </div>
@@ -360,7 +343,7 @@ export default async function HomePage() {
       <section className="section section-tone">
         <div className="container">
           <div className="section-head">
-            <h2 className="section-title">Loan Programs Overview</h2>
+            <h2 className="section-title">Loan Options Overview</h2>
           </div>
           <LoanProgramsGrid programs={loanPrograms} initialVisible={4} />
         </div>
@@ -440,11 +423,29 @@ export default async function HomePage() {
             </form>
           </article>
 
-          <article className="card card-soft">
-            <div className="kicker">Simple Process</div>
-            <h2>What type of loan are you looking for?</h2>
-            <LoanApplicationWidget />
-          </article>
+          <div className="authority-side">
+            <article className="card card-soft">
+              <h3>High-Context Advice</h3>
+              <p>
+                Strategic recommendations tailored to your timeline, property type,
+                and long-term financial goals.
+              </p>
+            </article>
+            <article className="card card-soft">
+              <h3>Fast, Transparent Communication</h3>
+              <p>
+                Clear milestones and proactive updates so you always know what is
+                happening next.
+              </p>
+            </article>
+            <article className="card card-soft">
+              <h3>Execution You Can Trust</h3>
+              <p>
+                Process rigor from pre-approval to close, reducing surprises and
+                helping transactions stay on track.
+              </p>
+            </article>
+          </div>
         </div>
       </section>
 
